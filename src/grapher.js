@@ -5,15 +5,15 @@ export class Grapher {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.equations = []; 
-    this.time = 0; // The magic 't' variable
+    this.time = 0;
     
     // Viewport state
     this.view = {
       offsetX: canvas.width / 2,
       offsetY: canvas.height / 2,
       scale: 60,
-      minScale: 10,
-      maxScale: 8000,
+      minScale: 5,
+      maxScale: 20000,
     };
 
     this.settings = {
@@ -21,6 +21,8 @@ export class Grapher {
       showGrid: true,
       showAxes: true,
       showLabels: true,
+      allowNegativeX: false, // Default: Wave starts at origin (0,0)
+      partyMode: false,
       axisColor: 'rgba(255, 255, 255, 0.2)',
       gridColor: 'rgba(255, 255, 255, 0.05)',
       labelColor: 'rgba(255, 255, 255, 0.25)',
@@ -46,7 +48,7 @@ export class Grapher {
     this.canvas.style.height = window.innerHeight + 'px';
 
     if (!this._hasResized) {
-      this.view.offsetX = window.innerWidth / 2;
+      this.view.offsetX = window.innerWidth / 4; // Shift (0,0) to be more visible from left
       this.view.offsetY = window.innerHeight / 2;
       this._hasResized = true;
     }
@@ -56,7 +58,6 @@ export class Grapher {
     this.equations = equations.map(eq => {
       try {
         if (!eq.expression.trim()) return { ...eq, compiled: null, error: null };
-        // We compile it once, mathjs handles 't' as a variable in evaluate
         return {
           ...eq,
           compiled: math.compile(eq.expression),
@@ -70,6 +71,25 @@ export class Grapher {
 
   updateSettings(newSettings) {
     this.settings = { ...this.settings, ...newSettings };
+  }
+
+  zoomIn() { this.adjustZoom(1.5); }
+  zoomOut() { this.adjustZoom(1 / 1.5); }
+
+  adjustZoom(factor) {
+    const nextScale = this.view.scale * factor;
+    if (nextScale < this.view.minScale || nextScale > this.view.maxScale) return;
+    
+    // Zoom towards center of screen
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    const unitX = (centerX - this.view.offsetX) / this.view.scale;
+    const unitY = (centerY - this.view.offsetY) / this.view.scale;
+
+    this.view.scale = nextScale;
+    this.view.offsetX = centerX - unitX * this.view.scale;
+    this.view.offsetY = centerY - unitY * this.view.scale;
   }
 
   setupInteractions() {
@@ -98,9 +118,8 @@ export class Grapher {
 
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const zoomFactor = 1.15;
+      const zoomFactor = 1.25;
       const direction = e.deltaY > 0 ? 1 / zoomFactor : zoomFactor;
-
       const mouseX = e.clientX;
       const mouseY = e.clientY;
 
@@ -142,6 +161,7 @@ export class Grapher {
 
     const startX = (offsetX % (spacing * scale)) - spacing * scale;
     for (let x = startX; x < width + spacing * scale; x += spacing * scale) {
+      if (!settings.allowNegativeX && x < offsetX - 1) continue;
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
     }
@@ -153,65 +173,82 @@ export class Grapher {
     }
     ctx.stroke();
 
-    // Axes
     if (settings.showAxes) {
       ctx.beginPath();
       ctx.strokeStyle = settings.axisColor;
-      ctx.lineWidth = 2;
-      ctx.moveTo(offsetX, 0);
-      ctx.lineTo(offsetX, height);
-      ctx.moveTo(0, offsetY);
-      ctx.lineTo(width, offsetY);
+      ctx.lineWidth = 2.5;
+      // Negative X clip visual
+      if (!settings.allowNegativeX) {
+        ctx.moveTo(offsetX, 0);
+        ctx.lineTo(offsetX, height);
+        ctx.moveTo(offsetX, offsetY);
+        ctx.lineTo(width, offsetY);
+      } else {
+        ctx.moveTo(offsetX, 0);
+        ctx.lineTo(offsetX, height);
+        ctx.moveTo(0, offsetY);
+        ctx.lineTo(width, offsetY);
+      }
       ctx.stroke();
     }
 
     if (settings.showLabels) {
       ctx.fillStyle = settings.labelColor;
-      ctx.font = '600 11px "Outfit", sans-serif';
+      ctx.font = '700 12px "Outfit", sans-serif';
       ctx.textAlign = 'center';
-      
       const labelSpacing = spacing * (scale < 50 ? 2 : 1);
       
       for (let x = startX; x < width + spacing * scale; x += labelSpacing * scale) {
         const val = (x - offsetX) / scale;
+        if (!settings.allowNegativeX && val < -0.01) continue;
         if (Math.abs(val) > 0.001) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), x, offsetY + 22);
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), x, offsetY + 24);
         }
       }
       ctx.textAlign = 'right';
       for (let y = startY; y < height + spacing * scale; y += labelSpacing * scale) {
         const val = -(y - offsetY) / scale;
         if (Math.abs(val) > 0.001) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), offsetX - 14, y + 4);
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), offsetX - 16, y + 4);
         }
       }
+      // Draw (0,0)
+      ctx.fillText("0", offsetX - 8, offsetY + 24);
     }
   }
 
   drawEquations() {
-    const { ctx, view, time } = this;
+    const { ctx, view, time, settings } = this;
     const { offsetX, offsetY, scale } = view;
     const width = window.innerWidth;
 
     this.equations.forEach(eq => {
       if (!eq.isVisible || !eq.compiled) return;
 
+      const color = settings.partyMode ? `hsl(${(time * 50) % 360}, 100%, 60%)` : eq.color;
+      
       ctx.beginPath();
-      ctx.strokeStyle = eq.color;
-      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
 
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = eq.color;
+      ctx.shadowBlur = settings.partyMode ? 25 : 15;
+      ctx.shadowColor = color;
 
       let first = true;
       const step = 2; 
 
       for (let px = 0; px <= width; px += step) {
-        const x = (px - offsetX) / scale;
+        let x = (px - offsetX) / scale;
+        
+        // Origin Start Logic: only draw x >= 0 if not allowed negative
+        if (!settings.allowNegativeX && x < 0) {
+          first = true;
+          continue;
+        }
+
         try {
-          // Injected 't' variable here!
           const y = eq.compiled.evaluate({ x, t: time });
           const py = offsetY - (y * scale);
 
@@ -236,8 +273,14 @@ export class Grapher {
   }
 
   animate() {
-    this.time += 0.05; // Tick tock!
+    this.time += 0.05;
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    
+    if (this.settings.partyMode) {
+      this.ctx.fillStyle = `rgba(${(Math.sin(this.time) + 1) * 20}, 0, ${(Math.cos(this.time) + 1) * 20}, 0.1)`;
+      this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    }
+
     this.drawGrid();
     this.drawEquations();
     requestAnimationFrame(() => this.animate());

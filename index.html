@@ -15,7 +15,7 @@
       <div id="controls-panel" class="controls-panel">
         <header>
           <h1>Squiggles 🎨</h1>
-          <p>Don't be a square, be a sine wave.</p>
+          <p>The universe's favorite wiggle simulator.</p>
         </header>
 
         <section id="equation-section" class="equation-list">
@@ -27,33 +27,48 @@
             <span>✨ Unleash a Squiggle</span>
           </button>
           <button id="chaos-btn" class="chaos-btn" title="Generate Mathematical Chaos">
-            🎲 Surprise Me
+            🎲
           </button>
         </div>
 
         <div class="settings-section">
           <div class="settings-row">
             <span>Grid Invisibility Cloak</span>
-            <input type="range" id="grid-range" min="0" max="100" value="60" />
+            <input type="range" id="grid-range" min="0" max="100" value="70" />
           </div>
           <div class="settings-row">
             <span>Show Boring Numbers</span>
             <input type="checkbox" id="show-labels" checked />
           </div>
+          <div class="settings-row">
+            <span>Embrace the Dark Side (Negative X)?</span>
+            <input type="checkbox" id="allow-negative" />
+          </div>
         </div>
 
-        <div class="info-box">
-          <b>Pro Tip:</b> Math is just drawing with numbers. Try <code>tan(sin(x)) * 5</code> for some real weirdness.
+        <div class="zoom-controls">
+          <button id="zoom-in" title="Mega-Zoom In">+</button>
+          <button id="zoom-out" title="Mega-Zoom Out">−</button>
+        </div>
+
+        <button id="party-btn" class="party-btn">
+          🌈 Party Mode: OFF
+        </button>
+
+        <div id="pun-box" class="info-box">
+          <b>Pun of the Day:</b> Why was the equal sign so humble? Because he knew he wasn't less than or greater than anyone else!
         </div>
       </div>
 
       <canvas id="viewport"></canvas>
 
       <div class="coord-display">
-        <div class="fun-label">Where are we?</div>
+        <div class="fun-label">Current Dimension</div>
         <div>x: <b id="x-coord">0.000</b></div>
         <div>y: <b id="y-coord">0.000</b></div>
       </div>
+
+      <div id="cursor-follower" class="cursor-follower">✨</div>
     </div>
     <script type="module" src="./main.js"></script>
   </body>

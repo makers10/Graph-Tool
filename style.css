@@ -169,84 +169,87 @@ header p {
   box-shadow: 0 0 20px var(--chaos-color);
 }
 
-.settings-section {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 20px;
-  padding: 16px;
+.zoom-controls {
   display: flex;
-  flex-direction: column;
   gap: 12px;
 }
 
-.settings-row span {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
-}
-
-.info-box {
-  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
-  border: 1px dashed rgba(255,255,255,0.2);
-  border-radius: 20px;
-  padding: 16px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.info-box code {
-  color: var(--chaos-color);
-}
-
-/* Viewport Area */
-#viewport {
+.zoom-controls button {
   flex: 1;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23ff4d94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l5 5"></path><path d="M9.5 14.5L16 8"></path></svg>'), auto;
-}
-
-/* Coordinates Overlay */
-.coord-display {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  background: var(--surface-color);
-  border: 3px solid var(--border-color);
-  border-radius: 24px;
-  padding: 16px 24px;
-  font-family: var(--font-mono);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  animation: slideInUp 1s ease;
-}
-
-@keyframes slideInUp {
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.fun-label {
-  font-size: 10px;
-  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--border-color);
+  color: white;
+  border-radius: 16px;
+  padding: 10px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--accent-color);
-  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.error-msg {
-  color: #ff4d94;
-  font-size: 12px;
-  margin-top: 8px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.zoom-controls button:hover {
+  background: var(--item-hover);
+  transform: translateY(-2px) scale(1.05);
+  border-color: var(--chaos-color);
 }
 
-.error-msg::before {
-  content: "⚠️ Oops!";
+.party-btn {
+  background: #1e1e30;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 18px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.party-btn.active {
+  background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+  background-size: 400% 400%;
+  animation: rainbow-bg 2s ease infinite;
+  border-color: transparent;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+@keyframes rainbow-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cursor-follower {
+  position: fixed;
+  pointer-events: none;
+  font-size: 24px;
+  z-index: 9999;
+  transition: transform 0.1s ease-out;
+  transform: translate(-50%, -50%);
+}
+
+#pun-box {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#pun-box:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
+}
+
+.party-mode-active #viewport {
+  animation: wiggle 0.5s infinite;
+}
+
+@keyframes wiggle {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.005) rotate(0.1deg); }
+  50% { transform: scale(1.01); }
+  75% { transform: scale(1.005) rotate(-0.1deg); }
+  100% { transform: scale(1); }
 }
 
