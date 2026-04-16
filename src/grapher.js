@@ -4,26 +4,25 @@ export class Grapher {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.equations = []; // { id, expression, color, isVisible, compiled }
+    this.equations = []; 
     
     // Viewport state
     this.view = {
       offsetX: canvas.width / 2,
       offsetY: canvas.height / 2,
-      scale: 50, // pixels per unit
-      zoom: 1,
-      minScale: 5,
-      maxScale: 2000,
+      scale: 60, // pixels per unit
+      minScale: 10,
+      maxScale: 5000,
     };
 
     this.settings = {
-      gridIntensity: 0.15,
+      gridOpacity: 0.4,
       showGrid: true,
       showAxes: true,
       showLabels: true,
-      axisColor: 'rgba(255, 255, 255, 0.5)',
+      axisColor: 'rgba(255, 255, 255, 0.25)',
       gridColor: 'rgba(255, 255, 255, 0.05)',
-      labelColor: 'rgba(255, 255, 255, 0.4)',
+      labelColor: 'rgba(255, 255, 255, 0.3)',
     };
 
     this.init();
@@ -37,12 +36,17 @@ export class Grapher {
   }
 
   resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-    // Re-center if needed, or maintain relative offset
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.width = window.innerWidth * dpr;
+    this.canvas.height = window.innerHeight * dpr;
+    this.ctx.scale(dpr, dpr);
+    
+    this.canvas.style.width = window.innerWidth + 'px';
+    this.canvas.style.height = window.innerHeight + 'px';
+
     if (!this._hasResized) {
-      this.view.offsetX = this.canvas.width / 2;
-      this.view.offsetY = this.canvas.height / 2;
+      this.view.offsetX = window.innerWidth / 2;
+      this.view.offsetY = window.innerHeight / 2;
       this._hasResized = true;
     }
   }
@@ -50,13 +54,14 @@ export class Grapher {
   setEquations(equations) {
     this.equations = equations.map(eq => {
       try {
+        if (!eq.expression.trim()) return { ...eq, compiled: null, error: null };
         return {
           ...eq,
           compiled: math.compile(eq.expression),
           error: null
         };
       } catch (err) {
-        return { ...eq, compiled: null, error: err.message };
+        return { ...eq, compiled: null, error: 'Invalid expression' };
       }
     });
   }
@@ -91,13 +96,12 @@ export class Grapher {
 
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const zoomFactor = 1.1;
+      const zoomFactor = 1.15;
       const direction = e.deltaY > 0 ? 1 / zoomFactor : zoomFactor;
 
       const mouseX = e.clientX;
       const mouseY = e.clientY;
 
-      // Coordinate before zoom
       const unitX = (mouseX - this.view.offsetX) / this.view.scale;
       const unitY = (mouseY - this.view.offsetY) / this.view.scale;
 
@@ -105,101 +109,106 @@ export class Grapher {
       if (nextScale < this.view.minScale || nextScale > this.view.maxScale) return;
 
       this.view.scale = nextScale;
-
-      // Adjust offset to zoom relative to mouse
       this.view.offsetX = mouseX - unitX * this.view.scale;
       this.view.offsetY = mouseY - unitY * this.view.scale;
     }, { passive: false });
   }
 
   handleHover(e) {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-    
-    // Map pixels to coordinate units
-    const x = (mouseX - this.view.offsetX) / this.view.scale;
-    const y = -(mouseY - this.view.offsetY) / this.view.scale;
+    const x = (e.clientX - this.view.offsetX) / this.view.scale;
+    const y = -(e.clientY - this.view.offsetY) / this.view.scale;
 
     document.getElementById('x-coord').textContent = x.toFixed(3);
     document.getElementById('y-coord').textContent = y.toFixed(3);
   }
 
   drawGrid() {
-    const { ctx, canvas, view, settings } = this;
+    const { ctx, view, settings } = this;
     const { offsetX, offsetY, scale } = view;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-    // Determine grid spacing based on scale
     let spacing = 1;
-    while (spacing * scale < 30) spacing *= 2;
-    while (spacing * scale > 150) spacing /= 2;
+    if (scale > 200) spacing = 0.5;
+    if (scale > 500) spacing = 0.1;
+    if (scale < 30) spacing = 2;
+    if (scale < 15) spacing = 5;
 
     ctx.beginPath();
     ctx.strokeStyle = settings.gridColor;
     ctx.lineWidth = 1;
 
-    // Vertical lines
     const startX = (offsetX % (spacing * scale)) - spacing * scale;
-    for (let x = startX; x < canvas.width + spacing * scale; x += spacing * scale) {
+    for (let x = startX; x < width + spacing * scale; x += spacing * scale) {
       ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
+      ctx.lineTo(x, height);
     }
 
-    // Horizontal lines
     const startY = (offsetY % (spacing * scale)) - spacing * scale;
-    for (let y = startY; y < canvas.height + spacing * scale; y += spacing * scale) {
+    for (let y = startY; y < height + spacing * scale; y += spacing * scale) {
       ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
+      ctx.lineTo(width, y);
     }
     ctx.stroke();
 
-    // Draw Axes
+    // Axes
     ctx.beginPath();
     ctx.strokeStyle = settings.axisColor;
-    ctx.lineWidth = 2;
-    // Y Axis
+    ctx.lineWidth = 1.5;
     ctx.moveTo(offsetX, 0);
-    ctx.lineTo(offsetX, canvas.height);
-    // X Axis
+    ctx.lineTo(offsetX, height);
     ctx.moveTo(0, offsetY);
-    ctx.lineTo(canvas.width, offsetY);
+    ctx.lineTo(width, offsetY);
     ctx.stroke();
 
     if (settings.showLabels) {
       ctx.fillStyle = settings.labelColor;
-      ctx.font = '10px JetBrains Mono';
+      ctx.font = '500 11px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      
+      const labelSpacing = spacing * (scale < 50 ? 2 : 1);
+      
       // X labels
-      for (let x = startX; x < canvas.width + spacing * scale; x += spacing * scale) {
+      for (let x = startX; x < width + spacing * scale; x += labelSpacing * scale) {
         const val = (x - offsetX) / scale;
-        if (Math.abs(val) > 0.1) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 2 : 0), x + 4, offsetY - 8);
+        if (Math.abs(val) > 0.001) {
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), x, offsetY + 18);
         }
       }
       // Y labels
-      for (let y = startY; y < canvas.height + spacing * scale; y += spacing * scale) {
+      ctx.textAlign = 'right';
+      for (let y = startY; y < height + spacing * scale; y += labelSpacing * scale) {
         const val = -(y - offsetY) / scale;
-        if (Math.abs(val) > 0.1) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 2 : 0), offsetX + 8, y - 4);
+        if (Math.abs(val) > 0.001) {
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), offsetX - 12, y + 4);
         }
       }
     }
   }
 
   drawEquations() {
-    const { ctx, canvas, view } = this;
+    const { ctx, view } = this;
     const { offsetX, offsetY, scale } = view;
+    const width = window.innerWidth;
 
     this.equations.forEach(eq => {
       if (!eq.isVisible || !eq.compiled) return;
 
+      // Draw Main Line
       ctx.beginPath();
       ctx.strokeStyle = eq.color;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+
+      // Line Glow
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = eq.color;
 
       let first = true;
-      const step = 2; // pixel step for smoothness vs performance
+      const step = 2; 
 
-      for (let px = 0; px <= canvas.width; px += step) {
+      for (let px = 0; px <= width; px += step) {
         const x = (px - offsetX) / scale;
         try {
           const y = eq.compiled.evaluate({ x });
@@ -221,11 +230,14 @@ export class Grapher {
         }
       }
       ctx.stroke();
+      
+      // Reset shadow for next equation or elements
+      ctx.shadowBlur = 0;
     });
   }
 
   animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     this.drawGrid();
     this.drawEquations();
     requestAnimationFrame(() => this.animate());

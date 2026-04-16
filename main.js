@@ -8,22 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const gridRange = document.getElementById('grid-range');
   const showLabelsCheckbox = document.getElementById('show-labels');
 
+  // Initialize Grapher
   const grapher = new Grapher(canvas);
 
+  // Initialize UI with a callback that updates the grapher
   const ui = new UI(equationSection, (equations) => {
     grapher.setEquations(equations);
   });
 
-  // Event Listeners for UI interaction
+  // Buttons and Controls
   addBtn.addEventListener('click', () => {
     ui.addEquation();
   });
 
   gridRange.addEventListener('input', (e) => {
-    const intensity = e.target.value / 255;
+    const val = parseInt(e.target.value);
+    const opacity = val / 100;
+    
     grapher.updateSettings({ 
-      gridColor: `rgba(255, 255, 255, ${intensity/3})`,
-      axisColor: `rgba(255, 255, 255, ${intensity})`
+      gridColor: `rgba(255, 255, 255, ${opacity * 0.1})`,
+      axisColor: `rgba(255, 255, 255, ${opacity * 0.4})`,
+      labelColor: `rgba(255, 255, 255, ${opacity * 0.5})`
     });
   });
 
@@ -31,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     grapher.updateSettings({ showLabels: e.target.checked });
   });
 
-  // Initial update
-  grapher.setEquations(ui.equations);
+  // Small delay to ensure everything is ready before first render update
+  setTimeout(() => {
+    grapher.setEquations(ui.equations);
+  }, 50);
 });

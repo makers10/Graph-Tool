@@ -1,34 +1,40 @@
 :root {
-  --bg-color: #0d0d12;
-  --surface-color: rgba(255, 255, 255, 0.03);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0ab;
-  --accent-color: #6366f1;
-  --panel-blur: 20px;
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --bg-color: #050508;
+  --surface-color: rgba(17, 17, 25, 0.7);
+  --item-bg: rgba(255, 255, 255, 0.03);
+  --item-hover: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent-color: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.3);
+  --panel-blur: 24px;
+  --font-main: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   
-  /* Graph Colors */
-  --graph-1: #3b82f6;
-  --graph-2: #ef4444;
-  --graph-3: #10b981;
-  --graph-4: #f59e0b;
-  --graph-5: #8b5cf6;
+  /* Graph Line Colors */
+  --line-1: #6366f1;
+  --line-2: #f43f5e;
+  --line-3: #10b981;
+  --line-4: #f59e0b;
+  --line-5: #ec4899;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-main);
   background-color: var(--bg-color);
   color: var(--text-primary);
-  overflow: hidden; /* Prevent scrolling of main page */
   height: 100vh;
   width: 100vw;
+  overflow: hidden;
+  background-image: radial-gradient(circle at 50% 50%, #11111a 0%, #050508 100%);
 }
 
 #app {
@@ -38,38 +44,46 @@ body {
   position: relative;
 }
 
-/* Sidebar / Controls */
+/* Sidebar / Controls Panel */
 .controls-panel {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 380px;
-  max-height: calc(100vh - 40px);
+  top: 24px;
+  left: 24px;
+  width: 340px;
+  max-height: calc(100vh - 48px);
   background: var(--surface-color);
   backdrop-filter: blur(var(--panel-blur));
   -webkit-backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 24px;
+  padding: 28px;
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  gap: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 header h1 {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+  background: linear-gradient(to right, #fff, var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 header p {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
+  font-weight: 400;
 }
 
 .equation-list {
@@ -77,139 +91,226 @@ header p {
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
+  padding-right: 4px;
 }
 
 .equation-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--item-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: all 0.2s ease;
 }
 
 .equation-item:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--item-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .equation-input-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .color-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   flex-shrink: 0;
+  box-shadow: 0 0 10px currentColor; /* Dynamic glow */
 }
 
 .equation-input {
   flex: 1;
   background: transparent;
   border: none;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 16px;
+  font-family: var(--font-mono);
+  font-size: 15px;
   color: var(--text-primary);
   outline: none;
+  width: 100%;
+}
+
+.equation-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
 }
 
 .remove-btn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .remove-btn:hover {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.1);
 }
 
 .add-btn {
   background: var(--accent-color);
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 14px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: transform 0.2s ease, background 0.2s ease;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px var(--accent-glow);
 }
 
 .add-btn:hover {
-  background: #4f46e5;
-  transform: translateY(-1px);
+  background: #a78bfa;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
 }
 
 .add-btn:active {
   transform: translateY(0);
 }
 
-/* Settings / Parameters */
+/* Settings Sections */
 .settings-section {
   border-top: 1px solid var(--border-color);
-  padding-top: 16px;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .settings-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
-/* Canvas Area */
+.settings-row h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+
+/* Custom Range Input */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 120px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+  transition: scale 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  scale: 1.2;
+}
+
+/* Checkbox Styling */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+
+/* Info Text */
+.info-box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  border: 1px dashed var(--border-color);
+}
+
+code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+/* Viewport Area */
 #viewport {
   flex: 1;
   width: 100%;
   height: 100%;
-  cursor: crosshair;
+  background: transparent;
+  cursor: grab;
+}
+
+#viewport:active {
+  cursor: grabbing;
 }
 
 /* Coordinates Overlay */
 .coord-display {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  bottom: 32px;
+  right: 32px;
   background: var(--surface-color);
   backdrop-filter: blur(var(--panel-blur));
   -webkit-backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 8px 16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
+  border-radius: 16px;
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   color: var(--text-secondary);
   pointer-events: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  gap: 16px;
+  animation: fadeIn 1s ease;
 }
 
-.coord-display span {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.coord-display b {
   color: var(--text-primary);
+  font-weight: 500;
   margin-left: 4px;
 }
 
 /* Scrollbar */
 .equation-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.equation-list::-webkit-scrollbar-track {
-  background: transparent;
+  width: 4px;
 }
 
 .equation-list::-webkit-scrollbar-thumb {
@@ -218,7 +319,9 @@ header p {
 }
 
 .error-msg {
-  color: #ef4444;
+  color: #f43f5e;
   font-size: 11px;
-  margin-left: 22px;
+  margin-left: 26px;
+  font-style: italic;
 }
+

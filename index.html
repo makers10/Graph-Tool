@@ -14,42 +14,45 @@
     <div id="app">
       <div id="controls-panel" class="controls-panel">
         <header>
-          <h1>Graphify</h1>
-          <p>Beautiful equation plotter</p>
+          <h1>Squiggles 🎨</h1>
+          <p>Don't be a square, be a sine wave.</p>
         </header>
 
         <section id="equation-section" class="equation-list">
-          <!-- Equations will be added here dynamically -->
+          <!-- Squiggles will appear here -->
         </section>
 
-        <button id="add-equation-btn" class="add-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Add Function
-        </button>
+        <div class="button-group">
+          <button id="add-equation-btn" class="add-btn">
+            <span>✨ Unleash a Squiggle</span>
+          </button>
+          <button id="chaos-btn" class="chaos-btn" title="Generate Mathematical Chaos">
+            🎲 Surprise Me
+          </button>
+        </div>
 
         <div class="settings-section">
           <div class="settings-row">
-            <span>Grid Intensity</span>
-            <input type="range" id="grid-range" min="0" max="100" value="40" />
+            <span>Grid Invisibility Cloak</span>
+            <input type="range" id="grid-range" min="0" max="100" value="60" />
           </div>
           <div class="settings-row">
-            <span>Show Labels</span>
+            <span>Show Boring Numbers</span>
             <input type="checkbox" id="show-labels" checked />
           </div>
         </div>
 
-        <div class="settings-section">
-          <p style="font-size: 11px; opacity: 0.6;">Use [x] as the variable. Example: sin(x^2) + cos(x)</p>
+        <div class="info-box">
+          <b>Pro Tip:</b> Math is just drawing with numbers. Try <code>tan(sin(x)) * 5</code> for some real weirdness.
         </div>
       </div>
 
       <canvas id="viewport"></canvas>
 
       <div class="coord-display">
-        (x) <span id="x-coord">0.00</span>, (y) <span id="y-coord">0.00</span>
+        <div class="fun-label">Where are we?</div>
+        <div>x: <b id="x-coord">0.000</b></div>
+        <div>y: <b id="y-coord">0.000</b></div>
       </div>
     </div>
     <script type="module" src="./main.js"></script>
