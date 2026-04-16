@@ -1,33 +1,25 @@
 :root {
-  --bg-color: #0b0b14;
-  --surface-color: rgba(20, 20, 35, 0.8);
-  --item-bg: rgba(255, 255, 255, 0.04);
-  --item-hover: rgba(255, 255, 255, 0.08);
+  --bg-color: #0c0c14;
+  --surface-color: rgba(22, 22, 38, 0.7);
+  --item-bg: rgba(255, 255, 255, 0.03);
+  --item-hover: rgba(255, 255, 255, 0.06);
   --border-color: rgba(255, 255, 255, 0.1);
-  --text-primary: #fff;
+  --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --accent-color: #ff4d94; /* Playful Pink */
-  --chaos-color: #00e5ff; /* Cyan Chaos */
-  --panel-blur: 20px;
+  --accent-color: #f472b6; /* Softer Pink */
+  --chaos-color: #22d3ee; /* Softer Cyan */
+  --panel-blur: 24px;
   --font-main: 'Outfit', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   
-  /* Playful Graph Colors */
-  --line-1: #ff4d94;
-  --line-2: #00e5ff;
-  --line-3: #70ff00;
-  --line-4: #ffea00;
-  --line-5: #ff00f7;
+  --line-1: #f472b6;
+  --line-2: #22d3ee;
+  --line-3: #4ade80;
+  --line-4: #fbbf24;
+  --line-5: #c084fc;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap');
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-}
 
 body {
   font-family: var(--font-main);
@@ -37,8 +29,8 @@ body {
   width: 100vw;
   overflow: hidden;
   background-image: 
-    radial-gradient(circle at 0% 0%, rgba(255, 77, 148, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, rgba(0, 229, 255, 0.1) 0%, transparent 40%);
+    radial-gradient(circle at 10% 10%, rgba(244, 114, 182, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
 }
 
 #app {
@@ -48,72 +40,58 @@ body {
   position: relative;
 }
 
-/* Sidebar / Controls Panel */
 .controls-panel {
   position: absolute;
   top: 24px;
   left: 24px;
-  width: 320px;
+  width: 340px;
   max-height: calc(100vh - 48px);
   background: var(--surface-color);
   backdrop-filter: blur(var(--panel-blur));
   -webkit-backdrop-filter: blur(var(--panel-blur));
-  border: 2px solid var(--border-color);
-  border-radius: 32px;
-  padding: 28px;
+  border: 1px solid var(--border-color);
+  border-radius: 28px;
+  padding: 24px;
   z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes bounceIn {
-  from { opacity: 0; transform: scale(0.9) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   margin-bottom: 2px;
-  background: linear-gradient(135deg, #fff 0%, #ff4d94 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  color: #fff;
 }
 
 header p {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
-  font-weight: 500;
-  line-height: 1.2;
 }
 
 .equation-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow-y: auto;
-  padding: 4px;
+  max-height: 300px;
+  padding-right: 4px;
 }
 
 .equation-item {
   background: var(--item-bg);
-  border: 2px solid transparent;
-  border-radius: 20px;
-  padding: 16px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 12px;
+  transition: all 0.2s ease;
 }
 
 .equation-item:hover {
-  transform: scale(1.02) rotate(1deg);
   background: var(--item-hover);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .equation-input {
@@ -121,52 +99,112 @@ header p {
   background: transparent;
   border: none;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 15px;
   color: #fff;
   outline: none;
-  font-weight: 600;
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .add-btn {
   flex: 1;
-  background: linear-gradient(135deg, #ff4d94, #ff0055);
+  background: var(--accent-color);
   color: white;
   border: none;
-  border-radius: 18px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 12px;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  box-shadow: 0 4px 15px rgba(255, 77, 148, 0.4);
+  transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 25px rgba(255, 77, 148, 0.6);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .chaos-btn {
-  background: #1e1e30;
-  border: 2px solid var(--chaos-color);
-  color: var(--chaos-color);
-  border-radius: 18px;
-  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: white;
+  border-radius: 14px;
+  padding: 12px;
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.chaos-btn:hover {
-  background: var(--chaos-color);
-  color: #000;
-  transform: rotate(-10deg) scale(1.1);
-  box-shadow: 0 0 20px var(--chaos-color);
+.zoom-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.zoom-controls button {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.party-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.party-btn.active {
+  background: linear-gradient(90deg, #f472b6, #22d3ee);
+  border-color: transparent;
+}
+
+.info-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-color);
+  border-radius: 16px;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.coord-display {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-secondary);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+#viewport {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.cursor-follower {
+  position: fixed;
+  pointer-events: none;
+  font-size: 20px;
+  z-index: 1000;
 }
 
 .zoom-controls {
