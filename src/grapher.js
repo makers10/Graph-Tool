@@ -5,24 +5,25 @@ export class Grapher {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.equations = []; 
+    this.time = 0; // The magic 't' variable
     
     // Viewport state
     this.view = {
       offsetX: canvas.width / 2,
       offsetY: canvas.height / 2,
-      scale: 60, // pixels per unit
+      scale: 60,
       minScale: 10,
-      maxScale: 5000,
+      maxScale: 8000,
     };
 
     this.settings = {
-      gridOpacity: 0.4,
+      gridOpacity: 0.3,
       showGrid: true,
       showAxes: true,
       showLabels: true,
-      axisColor: 'rgba(255, 255, 255, 0.25)',
+      axisColor: 'rgba(255, 255, 255, 0.2)',
       gridColor: 'rgba(255, 255, 255, 0.05)',
-      labelColor: 'rgba(255, 255, 255, 0.3)',
+      labelColor: 'rgba(255, 255, 255, 0.25)',
     };
 
     this.init();
@@ -55,13 +56,14 @@ export class Grapher {
     this.equations = equations.map(eq => {
       try {
         if (!eq.expression.trim()) return { ...eq, compiled: null, error: null };
+        // We compile it once, mathjs handles 't' as a variable in evaluate
         return {
           ...eq,
           compiled: math.compile(eq.expression),
           error: null
         };
       } catch (err) {
-        return { ...eq, compiled: null, error: 'Invalid expression' };
+        return { ...eq, compiled: null, error: 'Wobbly Math!' };
       }
     });
   }
@@ -152,57 +154,55 @@ export class Grapher {
     ctx.stroke();
 
     // Axes
-    ctx.beginPath();
-    ctx.strokeStyle = settings.axisColor;
-    ctx.lineWidth = 1.5;
-    ctx.moveTo(offsetX, 0);
-    ctx.lineTo(offsetX, height);
-    ctx.moveTo(0, offsetY);
-    ctx.lineTo(width, offsetY);
-    ctx.stroke();
+    if (settings.showAxes) {
+      ctx.beginPath();
+      ctx.strokeStyle = settings.axisColor;
+      ctx.lineWidth = 2;
+      ctx.moveTo(offsetX, 0);
+      ctx.lineTo(offsetX, height);
+      ctx.moveTo(0, offsetY);
+      ctx.lineTo(width, offsetY);
+      ctx.stroke();
+    }
 
     if (settings.showLabels) {
       ctx.fillStyle = settings.labelColor;
-      ctx.font = '500 11px "JetBrains Mono"';
+      ctx.font = '600 11px "Outfit", sans-serif';
       ctx.textAlign = 'center';
       
       const labelSpacing = spacing * (scale < 50 ? 2 : 1);
       
-      // X labels
       for (let x = startX; x < width + spacing * scale; x += labelSpacing * scale) {
         const val = (x - offsetX) / scale;
         if (Math.abs(val) > 0.001) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), x, offsetY + 18);
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), x, offsetY + 22);
         }
       }
-      // Y labels
       ctx.textAlign = 'right';
       for (let y = startY; y < height + spacing * scale; y += labelSpacing * scale) {
         const val = -(y - offsetY) / scale;
         if (Math.abs(val) > 0.001) {
-          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), offsetX - 12, y + 4);
+          ctx.fillText(val.toFixed(spacing < 1 ? 1 : 0), offsetX - 14, y + 4);
         }
       }
     }
   }
 
   drawEquations() {
-    const { ctx, view } = this;
+    const { ctx, view, time } = this;
     const { offsetX, offsetY, scale } = view;
     const width = window.innerWidth;
 
     this.equations.forEach(eq => {
       if (!eq.isVisible || !eq.compiled) return;
 
-      // Draw Main Line
       ctx.beginPath();
       ctx.strokeStyle = eq.color;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3.5;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
 
-      // Line Glow
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = 15;
       ctx.shadowColor = eq.color;
 
       let first = true;
@@ -211,7 +211,8 @@ export class Grapher {
       for (let px = 0; px <= width; px += step) {
         const x = (px - offsetX) / scale;
         try {
-          const y = eq.compiled.evaluate({ x });
+          // Injected 't' variable here!
+          const y = eq.compiled.evaluate({ x, t: time });
           const py = offsetY - (y * scale);
 
           if (isNaN(py) || !isFinite(py)) {
@@ -230,13 +231,12 @@ export class Grapher {
         }
       }
       ctx.stroke();
-      
-      // Reset shadow for next equation or elements
       ctx.shadowBlur = 0;
     });
   }
 
   animate() {
+    this.time += 0.05; // Tick tock!
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     this.drawGrid();
     this.drawEquations();

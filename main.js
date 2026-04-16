@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('viewport');
   const equationSection = document.getElementById('equation-section');
   const addBtn = document.getElementById('add-equation-btn');
+  const chaosBtn = document.getElementById('chaos-btn');
   const gridRange = document.getElementById('grid-range');
   const showLabelsCheckbox = document.getElementById('show-labels');
 
@@ -19,16 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Buttons and Controls
   addBtn.addEventListener('click', () => {
     ui.addEquation();
+    // Playful feedback: slight jiggle? (already handled by CSS hover)
+  });
+
+  chaosBtn.addEventListener('click', () => {
+    ui.addChaos();
   });
 
   gridRange.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
-    const opacity = val / 100;
+    const opacity = (100 - val) / 100; // "Invisibility cloak" logic
     
     grapher.updateSettings({ 
-      gridColor: `rgba(255, 255, 255, ${opacity * 0.1})`,
-      axisColor: `rgba(255, 255, 255, ${opacity * 0.4})`,
-      labelColor: `rgba(255, 255, 255, ${opacity * 0.5})`
+      gridColor: `rgba(255, 255, 255, ${opacity * 0.15})`,
+      axisColor: `rgba(255, 255, 255, ${opacity * 0.3})`,
+      labelColor: `rgba(255, 255, 255, ${opacity * 0.4})`
     });
   });
 
@@ -39,5 +45,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // Small delay to ensure everything is ready before first render update
   setTimeout(() => {
     grapher.setEquations(ui.equations);
-  }, 50);
+  }, 100);
 });
