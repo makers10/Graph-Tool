@@ -26,12 +26,15 @@ export class Grapher {
       axisColor: 'rgba(255, 255, 255, 0.2)',
       gridColor: 'rgba(255, 255, 255, 0.05)',
       labelColor: 'rgba(255, 255, 255, 0.25)',
+      showSparkles: true,
     };
 
+    this.particles = [];
     this.init();
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.setupInteractions();
+    this.onHover = null;
   }
 
   init() {
@@ -65,6 +68,20 @@ export class Grapher {
         };
       } catch (err) {
         return { ...eq, compiled: null, error: 'Wobbly Math!' };
+      }
+    });
+
+    // Sync particles
+    const activeIds = this.equations.map(e => e.id);
+    this.particles = this.particles.filter(p => activeIds.includes(p.id));
+    
+    this.equations.forEach(eq => {
+      if (!this.particles.find(p => p.id === eq.id)) {
+        this.particles.push({
+          id: eq.id,
+          x: this.settings.allowNegativeX ? -10 : 0,
+          trail: []
+        });
       }
     });
   }
@@ -116,6 +133,10 @@ export class Grapher {
       this.handleHover(e);
     });
 
+    this.canvas.addEventListener('mouseleave', () => {
+      if (this.onHover) this.onHover(null);
+    });
+
     window.addEventListener('mouseup', () => {
       isDragging = false;
     });
@@ -145,6 +166,8 @@ export class Grapher {
 
     document.getElementById('x-coord').textContent = x.toFixed(3);
     document.getElementById('y-coord').textContent = y.toFixed(3);
+
+    if (this.onHover) this.onHover(y);
   }
 
   drawGrid() {
@@ -277,6 +300,80 @@ export class Grapher {
     });
   }
 
+  drawParticles() {
+    if (!this.settings.showSparkles) return;
+    const { ctx, view, time, equations, params, settings } = this;
+    const { offsetX, offsetY, scale } = view;
+
+    this.particles.forEach(p => {
+      const eq = equations.find(e => e.id === p.id);
+      if (!eq || !eq.compiled || !eq.isVisible) return;
+
+      const color = settings.partyMode ? `hsl(${(time * 100) % 360}, 100%, 70%)` : eq.color;
+
+      // Update position
+      const speed = 0.05 * (60 / scale); // Calm speed adjusted by zoom
+      p.x += speed;
+
+      // Reset if off-screen (mathematically)
+      const maxX = (window.innerWidth - offsetX) / scale;
+      const minX = settings.allowNegativeX ? -offsetX / scale : 0;
+      if (p.x > maxX) p.x = minX;
+      if (p.x < minX) p.x = maxX;
+
+      try {
+        const scope = { x: p.x, t: time, ...params };
+        const y = eq.compiled.evaluate(scope);
+        const px = offsetX + (p.x * scale);
+        const py = offsetY - (y * scale);
+
+        // Add to trail
+        p.trail.unshift({ px, py, time: Date.now() });
+        if (p.trail.length > 20) p.trail.pop();
+
+        // Draw trail
+        p.trail.forEach((point, i) => {
+          const age = (Date.now() - point.time) / 1000;
+          const alpha = Math.max(0, 1 - age * 2);
+          const size = Math.max(0, (20 - i) / 2);
+
+          if (alpha <= 0) return;
+
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.globalAlpha = alpha * 0.5;
+          ctx.arc(point.px, point.py, size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw head sparkle
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+        ctx.beginPath();
+        ctx.fillStyle = "#fff";
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Lens flare effect
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.moveTo(px - 15, py);
+        ctx.lineTo(px + 15, py);
+        ctx.moveTo(px, py - 15);
+        ctx.lineTo(px, py + 15);
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+      } catch (e) {
+        // Math is hard, particle is sad
+      }
+    });
+
+    ctx.globalAlpha = 1;
+  }
+
   animate() {
     this.time += 0.05;
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -288,6 +385,7 @@ export class Grapher {
 
     this.drawGrid();
     this.drawEquations();
+    this.drawParticles();
     requestAnimationFrame(() => this.animate());
   }
 }

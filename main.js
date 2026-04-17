@@ -1,5 +1,6 @@
 import { Grapher } from './src/grapher';
 import { UI, ParameterUI } from './src/ui';
+import { Sonifier } from './src/sonifier';
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('viewport');
@@ -16,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const follower = document.getElementById('cursor-follower');
   const paramSection = document.getElementById('parameter-list');
   const addParamBtn = document.getElementById('add-param-btn');
+  const singingModeCheckbox = document.getElementById('singing-mode');
+  const sparkleModeCheckbox = document.getElementById('sparkle-mode');
 
   const puns = [
     "Why was the math book sad? It had too many problems.",
@@ -40,7 +43,24 @@ document.addEventListener('DOMContentLoaded', () => {
     grapher.setParameters(params);
   });
 
+  const sonifier = new Sonifier();
+  grapher.onHover = (y) => {
+    if (y === null) {
+      sonifier.stop();
+    } else {
+      sonifier.update(y);
+    }
+  };
+
   addParamBtn.addEventListener('click', () => paramUi.addParameter());
+  
+  singingModeCheckbox.addEventListener('change', (e) => {
+    sonifier.setEnabled(e.target.checked);
+  });
+
+  sparkleModeCheckbox.addEventListener('change', (e) => {
+    grapher.updateSettings({ showSparkles: e.target.checked });
+  });
 
   // Zoom
   zoomInBtn.addEventListener('click', () => grapher.zoomIn());
