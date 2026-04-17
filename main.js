@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const singingModeCheckbox = document.getElementById('singing-mode');
   const sparkleModeCheckbox = document.getElementById('sparkle-mode');
   const presetSelector = document.getElementById('preset-selector');
+  const exportBtn = document.getElementById('export-btn');
 
   const puns = [
     "Why was the math book sad? It had too many problems.",
@@ -78,6 +79,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sparkleModeCheckbox.addEventListener('change', (e) => {
     grapher.updateSettings({ showSparkles: e.target.checked });
+  });
+
+  exportBtn.addEventListener('click', () => {
+    // Visual flash
+    const flash = document.createElement('div');
+    flash.className = 'camera-flash';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 1000);
+
+    // Capture and download
+    const dataUrl = grapher.capture();
+    const link = document.createElement('a');
+    link.download = `squiggle-${Date.now()}.png`;
+    link.href = dataUrl;
+    link.click();
   });
 
   // Zoom

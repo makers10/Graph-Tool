@@ -388,4 +388,32 @@ export class Grapher {
     this.drawParticles();
     requestAnimationFrame(() => this.animate());
   }
+
+  capture() {
+    // Generate a high-quality capture
+    const tempCanvas = document.createElement('canvas');
+    const dpr = window.devicePixelRatio || 1;
+    tempCanvas.width = this.canvas.width;
+    tempCanvas.height = this.canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Save current context
+    const mainCtx = this.ctx;
+    this.ctx = tempCtx;
+    this.ctx.scale(dpr, dpr);
+
+    // Draw background
+    this.ctx.fillStyle = '#0c0c14'; // Theme background
+    this.ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Draw content
+    this.drawGrid();
+    this.drawEquations();
+    this.drawParticles();
+
+    // Restore main context
+    this.ctx = mainCtx;
+
+    return tempCanvas.toDataURL('image/png');
+  }
 }
