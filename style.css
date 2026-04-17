@@ -445,3 +445,38 @@ header p {
   color: #fff;
   padding: 10px;
 }
+
+.export-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  border-radius: 14px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-btn:hover {
+  background: var(--item-hover);
+  border-color: var(--chaos-color);
+}
+
+.camera-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  animation: flash-anim 0.5s ease-out;
+}
+
+@keyframes flash-anim {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
