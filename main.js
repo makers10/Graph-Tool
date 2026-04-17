@@ -1,6 +1,7 @@
 import { Grapher } from './src/grapher';
 import { UI, ParameterUI } from './src/ui';
 import { Sonifier } from './src/sonifier';
+import { PRESETS } from './src/presets';
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('viewport');
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const addParamBtn = document.getElementById('add-param-btn');
   const singingModeCheckbox = document.getElementById('singing-mode');
   const sparkleModeCheckbox = document.getElementById('sparkle-mode');
+  const presetSelector = document.getElementById('preset-selector');
 
   const puns = [
     "Why was the math book sad? It had too many problems.",
@@ -54,6 +56,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   addParamBtn.addEventListener('click', () => paramUi.addParameter());
   
+  // Populate Gallery
+  PRESETS.forEach((preset, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = preset.name;
+    presetSelector.appendChild(option);
+  });
+
+  presetSelector.addEventListener('change', (e) => {
+    const preset = PRESETS[e.target.value];
+    if (preset) {
+      ui.setEquations(preset.equations);
+      paramUi.setParameters(preset.parameters);
+    }
+  });
+
   singingModeCheckbox.addEventListener('change', (e) => {
     sonifier.setEnabled(e.target.checked);
   });

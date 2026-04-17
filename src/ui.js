@@ -102,6 +102,17 @@ export class UI {
 
     if (shouldNotify) this.notify();
   }
+
+  setEquations(equations) {
+    this.equations = equations.map(expr => ({
+      id: Math.random().toString(36).substring(2, 9),
+      expression: expr,
+      color: this.colors[this.equations.length % this.colors.length],
+      isVisible: true,
+      error: null
+    }));
+    this.render();
+  }
 }
 
 export class ParameterUI {
@@ -193,5 +204,13 @@ export class ParameterUI {
     }
     
     this.notify();
+  }
+
+  setParameters(params) {
+    this.parameters = params.map(p => ({
+      ...p,
+      id: Math.random().toString(36).substring(2, 9)
+    }));
+    this.render();
   }
 }
