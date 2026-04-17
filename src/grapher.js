@@ -69,6 +69,10 @@ export class Grapher {
     });
   }
 
+  setParameters(params) {
+    this.params = params;
+  }
+
   updateSettings(newSettings) {
     this.settings = { ...this.settings, ...newSettings };
   }
@@ -249,7 +253,8 @@ export class Grapher {
         }
 
         try {
-          const y = eq.compiled.evaluate({ x, t: time });
+          const scope = { x, t: time, ...this.params };
+          const y = eq.compiled.evaluate(scope);
           const py = offsetY - (y * scale);
 
           if (isNaN(py) || !isFinite(py)) {

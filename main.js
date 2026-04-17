@@ -1,5 +1,5 @@
 import { Grapher } from './src/grapher';
-import { UI } from './src/ui';
+import { UI, ParameterUI } from './src/ui';
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('viewport');
@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const partyBtn = document.getElementById('party-btn');
   const punBox = document.getElementById('pun-box');
   const follower = document.getElementById('cursor-follower');
+  const paramSection = document.getElementById('parameter-list');
+  const addParamBtn = document.getElementById('add-param-btn');
 
   const puns = [
     "Why was the math book sad? It had too many problems.",
@@ -33,6 +35,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh pun when squiggle added
     punBox.innerHTML = `<b>Pun-ish Me:</b> ${puns[Math.floor(Math.random() * puns.length)]}`;
   });
+
+  const paramUi = new ParameterUI(paramSection, (params) => {
+    grapher.setParameters(params);
+  });
+
+  addParamBtn.addEventListener('click', () => paramUi.addParameter());
 
   // Zoom
   zoomInBtn.addEventListener('click', () => grapher.zoomIn());
