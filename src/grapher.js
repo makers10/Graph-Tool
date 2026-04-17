@@ -24,12 +24,13 @@ export class Grapher {
       allowNegativeX: false, // Default: Wave starts at origin (0,0)
       partyMode: false,
       axisColor: 'rgba(255, 255, 255, 0.2)',
-      gridColor: 'rgba(255, 255, 255, 0.05)',
       labelColor: 'rgba(255, 255, 255, 0.25)',
       showSparkles: true,
+      showIntersections: true,
     };
 
     this.particles = [];
+    this.hoverState = { x: 0, y: 0, activePoint: null };
     this.init();
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -82,6 +83,46 @@ export class Grapher {
           x: this.settings.allowNegativeX ? -10 : 0,
           trail: []
         });
+      }
+    });
+
+    this.calculateCriticalPoints();
+  }
+
+  calculateCriticalPoints() {
+    const range = 20; // Search range
+    const step = 0.1;
+
+    this.equations.forEach(eq => {
+      eq.criticalPoints = [];
+      if (!eq.compiled || !eq.isVisible) return;
+
+      let lastY = null;
+      let lastSlope = null;
+
+      for (let x = -range; x <= range; x += step) {
+        try {
+          const scope = { x, t: this.time, ...this.params };
+          const y = eq.compiled.evaluate(scope);
+
+          if (lastY !== null) {
+            // Root detection
+            if (lastY * y <= 0) {
+              eq.criticalPoints.push({ x: x - step / 2, y: 0, type: 'Root' });
+            }
+
+            // Extrema detection
+            const slope = (y - lastY) / step;
+            if (lastSlope !== null && lastSlope * slope <= 0) {
+              eq.criticalPoints.push({ x: x - step / 2, y: lastY, type: 'Extrema' });
+            }
+            lastSlope = slope;
+          }
+          lastY = y;
+        } catch (e) {
+          lastY = null;
+          lastSlope = null;
+        }
       }
     });
   }
@@ -166,6 +207,22 @@ export class Grapher {
 
     document.getElementById('x-coord').textContent = x.toFixed(3);
     document.getElementById('y-coord').textContent = y.toFixed(3);
+
+    this.hoverState.x = x;
+    this.hoverState.y = y;
+    this.hoverState.activePoint = null;
+
+    // Detect nearby critical points
+    const threshold = 15 / this.view.scale; // 15 pixels radius
+    this.equations.forEach(eq => {
+      if (!eq.criticalPoints) return;
+      eq.criticalPoints.forEach(pt => {
+        const dist = Math.sqrt((pt.x - x) ** 2 + (pt.y - y) ** 2);
+        if (dist < threshold) {
+          this.hoverState.activePoint = { ...pt, color: eq.color };
+        }
+      });
+    });
 
     if (this.onHover) this.onHover(y);
   }
@@ -374,6 +431,37 @@ export class Grapher {
     ctx.globalAlpha = 1;
   }
 
+  drawHighlights() {
+    const { ctx, view, hoverState, settings } = this;
+    const { offsetX, offsetY, scale } = view;
+
+    if (hoverState.activePoint && settings.showIntersections) {
+      const pt = hoverState.activePoint;
+      const px = offsetX + pt.x * scale;
+      const py = offsetY - pt.y * scale;
+
+      ctx.beginPath();
+      ctx.arc(px, py, 12, 0, Math.PI * 2);
+      ctx.strokeStyle = pt.color;
+      ctx.lineWidth = 3;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = pt.color;
+      ctx.stroke();
+
+      ctx.fillStyle = pt.color;
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#fff";
+      ctx.font = '800 12px "Outfit"';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${pt.type}: (${pt.x.toFixed(2)}, ${pt.y.toFixed(2)})`, px + 15, py - 15);
+    }
+  }
+
   animate() {
     this.time += 0.05;
     this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
@@ -386,6 +474,13 @@ export class Grapher {
     this.drawGrid();
     this.drawEquations();
     this.drawParticles();
+    this.drawHighlights();
+    
+    // Periodically recalculate critical points to account for 't' or parameter changes
+    if (Math.floor(this.time * 10) % 20 === 0) {
+      this.calculateCriticalPoints();
+    }
+
     requestAnimationFrame(() => this.animate());
   }
 

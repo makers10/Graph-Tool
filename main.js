@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const addParamBtn = document.getElementById('add-param-btn');
   const singingModeCheckbox = document.getElementById('singing-mode');
   const sparkleModeCheckbox = document.getElementById('sparkle-mode');
+  const smartHighlightsCheckbox = document.getElementById('smart-highlights');
   const presetSelector = document.getElementById('preset-selector');
   const exportBtn = document.getElementById('export-btn');
 
@@ -79,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sparkleModeCheckbox.addEventListener('change', (e) => {
     grapher.updateSettings({ showSparkles: e.target.checked });
+  });
+
+  smartHighlightsCheckbox.addEventListener('change', (e) => {
+    grapher.updateSettings({ showIntersections: e.target.checked });
   });
 
   exportBtn.addEventListener('click', () => {
