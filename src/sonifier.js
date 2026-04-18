@@ -62,7 +62,7 @@ export class Sonifier {
   }
 
   stop() {
-    if (this.gainNode) {
+    if (this.gainNode && this.audioCtx) {
       this.gainNode.gain.setTargetAtTime(0, this.audioCtx.currentTime, 0.05);
     }
   }

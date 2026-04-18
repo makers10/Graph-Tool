@@ -81,7 +81,7 @@ export class UI {
       item.innerHTML = `
         <div class="equation-input-row" style="display: flex; align-items: center; gap: 10px;">
           <input type="text" class="equation-input" placeholder="Warp space here..." value="${eq.expression}" spellcheck="false" />
-          <button class="remove-btn" title="Delete this squiggle" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;">
+          <button class="remove-btn" title="Delete this squiggle" aria-label="Delete this squiggle" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -181,7 +181,7 @@ export class ParameterUI {
           <input type="text" class="param-name" value="${p.name}" maxlength="2" spellcheck="false" />
           <input type="range" class="param-slider" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.value}" />
           <span class="param-value">${p.value}</span>
-          <button class="remove-mini-btn" title="Remove variable">×</button>
+          <button class="remove-mini-btn" title="Remove variable" aria-label="Remove variable">×</button>
         `;
 
         const nameInput = item.querySelector('.param-name');
