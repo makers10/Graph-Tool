@@ -465,11 +465,11 @@ export class Grapher {
 
   animate() {
     this.time += 0.05;
-    this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
     if (this.settings.partyMode) {
       this.ctx.fillStyle = `rgba(${(Math.sin(this.time) + 1) * 20}, 0, ${(Math.cos(this.time) + 1) * 20}, 0.1)`;
-      this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     this.drawGrid();
@@ -500,7 +500,7 @@ export class Grapher {
 
     // Draw background
     this.ctx.fillStyle = '#0c0c14'; // Theme background
-    this.ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Draw content
     this.drawGrid();
