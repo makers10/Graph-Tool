@@ -137,38 +137,6 @@ header p {
   cursor: pointer;
 }
 
-.zoom-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.zoom-controls button {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  color: #fff;
-  border-radius: 12px;
-  padding: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.party-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-radius: 14px;
-  padding: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.party-btn.active {
-  background: linear-gradient(90deg, #f472b6, #22d3ee);
-  border-color: transparent;
-}
 
 .info-box {
   background: rgba(255, 255, 255, 0.02);
@@ -200,12 +168,7 @@ header p {
   height: 100%;
 }
 
-.cursor-follower {
-  position: fixed;
-  pointer-events: none;
-  font-size: 20px;
-  z-index: 1000;
-}
+
 
 .zoom-controls {
   display: flex;
