@@ -23,6 +23,7 @@ export class Grapher {
       showLabels: true,
       allowNegativeX: false, // Default: Wave starts at origin (0,0)
       partyMode: false,
+      gridColor: 'rgba(255, 255, 255, 0.045)',
       axisColor: 'rgba(255, 255, 255, 0.2)',
       labelColor: 'rgba(255, 255, 255, 0.25)',
       showSparkles: true,

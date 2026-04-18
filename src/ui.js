@@ -104,10 +104,10 @@ export class UI {
   }
 
   setEquations(equations) {
-    this.equations = equations.map(expr => ({
+    this.equations = equations.map((expr, index) => ({
       id: Math.random().toString(36).substring(2, 9),
       expression: expr,
-      color: this.colors[this.equations.length % this.colors.length],
+      color: this.colors[index % this.colors.length],
       isVisible: true,
       error: null
     }));
