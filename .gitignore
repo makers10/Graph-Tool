@@ -23,3 +23,25 @@ dist-ssr
 *.sln
 *.sw?
 plan.md
+What Could Be Better
+Frontend:
+
+The controls panel has no scrollbar styling — on small screens it overflows silently
+No touch/mobile support (no touchstart/touchmove for pan/zoom on canvas)
+requestAnimationFrame loop in animate() is never cancelled — if Grapher is ever re-instantiated, you get multiple loops running
+Math.random().toString(36) for IDs is fine for a toy but crypto.randomUUID() is available natively and collision-proof
+The setTimeout(() => grapher.setEquations(...), 100) in main.js is a timing hack — should use a proper init callback
+Equation input doesn't debounce — every keystroke triggers a full re-compile and re-render
+No error boundary around math.compile evaluation in the render loop — a bad equation during animation can spam the console
+Architecture / Code Quality:
+
+Grapher directly queries the DOM (document.getElementById('x-coord')) — breaks separation of concerns; should use a callback like onHover
+calculateCriticalPoints runs on a fixed range [-20, 20] regardless of the current viewport — misses points when zoomed out far
+Parameters (this.params) in Grapher are never initialized — if setParameters is never called, { ...this.params } spreads undefined and silently fails in some JS engines
+No vite.config.js — the project relies entirely on Vite defaults, which is fine now but will bite you when you need aliases, env vars, or build targets
+Missing from the plan that would add real value:
+
+URL state persistence (share a graph via URL) — straightforward with URLSearchParams
+Keyboard shortcuts (zoom with +/-, toggle grid with g)
+Equation visibility toggle (the isVisible field exists on the model but there's no UI toggle for it)
+The core logic is solid and the visual design is genuinely nice. The main things to fix immediately are the dead files, the gridColor init bug, the DPR clear bug, and the color assignment issue in setEquations. Those will cause real visible problems.
