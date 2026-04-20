@@ -37,22 +37,41 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   const grapher = new Grapher(canvas);
+  
+  let appInitialized = false;
+  const saveStateToURL = () => {
+    if (!appInitialized) return;
+    const state = {
+      eq: ui.equations.map(e => ({ expr: e.expression, vis: e.isVisible })),
+      p: paramUi.parameters.map(p => ({ n: p.name, v: p.value, min: p.min, max: p.max, step: p.step }))
+    };
+    const url = new URL(window.location);
+    url.searchParams.set('state', btoa(JSON.stringify(state)));
+    window.history.replaceState({}, '', url);
+  };
+
   const ui = new UI(equationSection, (equations) => {
     grapher.setEquations(equations);
+    saveStateToURL();
     // Refresh pun when squiggle added
     punBox.innerHTML = `<b>Pun-ish Me:</b> ${puns[Math.floor(Math.random() * puns.length)]}`;
   });
 
   const paramUi = new ParameterUI(paramSection, (params) => {
     grapher.setParameters(params);
+    saveStateToURL();
   });
 
   const sonifier = new Sonifier();
-  grapher.onHover = (y) => {
-    if (y === null) {
+  grapher.onHover = (data) => {
+    if (!data) {
       sonifier.stop();
+      document.getElementById('x-coord').textContent = '0.000';
+      document.getElementById('y-coord').textContent = '0.000';
     } else {
-      sonifier.update(y);
+      sonifier.update(data.y);
+      document.getElementById('x-coord').textContent = data.x.toFixed(3);
+      document.getElementById('y-coord').textContent = data.y.toFixed(3);
     }
   };
 
@@ -127,6 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Standard buttons
   addBtn.addEventListener('click', () => ui.addEquation());
   chaosBtn.addEventListener('click', () => ui.addChaos());
+  // Fix gridColor bug by initializing
+  const initialGridVal = parseInt(gridRange.value);
+  const initialOpacity = (100 - initialGridVal) / 100;
+  grapher.updateSettings({
+    gridColor: `rgba(255, 255, 255, ${initialOpacity * 0.15})`,
+    axisColor: `rgba(255, 255, 255, ${initialOpacity * 0.3})`,
+    labelColor: `rgba(255, 255, 255, ${initialOpacity * 0.4})`
+  });
+
   gridRange.addEventListener('input', (e) => {
     const val = parseInt(e.target.value);
     const opacity = (100 - val) / 100;
@@ -140,7 +168,52 @@ document.addEventListener('DOMContentLoaded', () => {
     grapher.updateSettings({ showLabels: e.target.checked });
   });
 
-  // Synchronous initial sync to replace setTimeout hack
+  // Load state from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const stateParam = urlParams.get('state');
+  if (stateParam) {
+    try {
+      const state = JSON.parse(atob(stateParam));
+      if (state.eq) {
+        ui.equations = state.eq.map((e, i) => ({
+          id: crypto.randomUUID(),
+          expression: e.expr || '',
+          color: ui.colors[ui.colorIndex++ % ui.colors.length],
+          isVisible: e.vis !== false,
+          error: null
+        }));
+        ui.render(false);
+      }
+      if (state.p) {
+        paramUi.parameters = state.p.map(p => ({
+          id: crypto.randomUUID(),
+          name: p.n || '',
+          value: p.v || 0,
+          min: p.min || -10,
+          max: p.max || 10,
+          step: p.step || 0.1
+        }));
+        paramUi.render(false);
+      }
+    } catch (e) {
+      console.error('Invalid URL state', e);
+    }
+  }
+
+  appInitialized = true;
+  // Synchronous initial sync
   paramUi.notify();
   ui.notify();
+
+  // Keyboard Shortcuts
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === '=' || e.key === '+') {
+      grapher.zoomIn();
+    } else if (e.key === '-' || e.key === '_') {
+      grapher.zoomOut();
+    } else if (e.key.toLowerCase() === 'g') {
+      grapher.updateSettings({ showGrid: !grapher.settings.showGrid });
+    }
+  });
 });

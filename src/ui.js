@@ -24,6 +24,7 @@ export class UI {
       'x * sin(x)',
     ];
 
+    this.colorIndex = 0;
     this.init();
   }
 
@@ -36,7 +37,7 @@ export class UI {
 
   addEquation(expression = 'sin(x)') {
     const id = crypto.randomUUID();
-    const color = this.colors[this.equations.length % this.colors.length];
+    const color = this.colors[this.colorIndex++ % this.colors.length];
     this.equations.push({ id, expression, color, isVisible: true, error: null });
     this.render();
   }
@@ -81,6 +82,9 @@ export class UI {
       item.innerHTML = `
         <div class="equation-input-row" style="display: flex; align-items: center; gap: 10px;">
           <input type="text" class="equation-input" placeholder="Warp space here..." value="${eq.expression}" spellcheck="false" />
+          <button class="vis-btn" title="Toggle visibility" aria-label="Toggle visibility" style="background: none; border: none; color: ${eq.isVisible ? 'white' : 'rgba(255,255,255,0.3)'}; cursor: pointer; font-size: 14px;">
+            👁️
+          </button>
           <button class="remove-btn" title="Delete this squiggle" aria-label="Delete this squiggle" style="background: none; border: none; color: rgba(255,255,255,0.3); cursor: pointer;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -100,6 +104,12 @@ export class UI {
         }, 300);
       });
 
+      const visBtn = item.querySelector('.vis-btn');
+      visBtn.addEventListener('click', () => {
+        eq.isVisible = !eq.isVisible;
+        this.render();
+      });
+
       const removeBtn = item.querySelector('.remove-btn');
       removeBtn.addEventListener('click', () => this.removeEquation(eq.id));
 
@@ -110,13 +120,24 @@ export class UI {
   }
 
   setEquations(equations) {
-    this.equations = equations.map((expr, index) => ({
-      id: crypto.randomUUID(),
-      expression: expr,
-      color: this.colors[index % this.colors.length],
-      isVisible: true,
-      error: null
-    }));
+    this.equations = equations.map((expr, index) => {
+      if (typeof expr === 'string') {
+        return {
+          id: crypto.randomUUID(),
+          expression: expr,
+          color: this.colors[this.colorIndex++ % this.colors.length],
+          isVisible: true,
+          error: null
+        };
+      }
+      return {
+        id: crypto.randomUUID(),
+        expression: expr.expression || '',
+        color: expr.color || this.colors[this.colorIndex++ % this.colors.length],
+        isVisible: expr.isVisible !== false,
+        error: null
+      };
+    });
     this.render();
   }
 }

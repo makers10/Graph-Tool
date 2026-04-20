@@ -23,16 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 plan.md
-What Could Be Better
-Frontend:
-
-The controls panel has no scrollbar styling — on small screens it overflows silently
-No touch/mobile support (no touchstart/touchmove for pan/zoom on canvas)
-requestAnimationFrame loop in animate() is never cancelled — if Grapher is ever re-instantiated, you get multiple loops running
-Math.random().toString(36) for IDs is fine for a toy but crypto.randomUUID() is available natively and collision-proof
-The setTimeout(() => grapher.setEquations(...), 100) in main.js is a timing hack — should use a proper init callback
-Equation input doesn't debounce — every keystroke triggers a full re-compile and re-render
-No error boundary around math.compile evaluation in the render loop — a bad equation during animation can spam the console
 Architecture / Code Quality:
 
 Grapher directly queries the DOM (document.getElementById('x-coord')) — breaks separation of concerns; should use a callback like onHover

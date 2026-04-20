@@ -32,6 +32,7 @@ export class Grapher {
 
     this.particles = [];
     this.hoverState = { x: 0, y: 0, activePoint: null };
+    this.params = {};
     this.init();
     this.resize();
     window.addEventListener('resize', () => this.resize());
@@ -91,8 +92,16 @@ export class Grapher {
   }
 
   calculateCriticalPoints() {
-    const range = 20; // Search range
-    const step = 0.1;
+    const { offsetX, scale } = this.view;
+    const width = window.innerWidth;
+    
+    // Determine dynamic range based on viewport
+    const minX = -offsetX / scale;
+    const maxX = (width - offsetX) / scale;
+    
+    const rangeMin = this.settings.allowNegativeX ? minX : Math.max(0, minX);
+    const rangeMax = maxX;
+    const step = Math.max(0.01, (rangeMax - rangeMin) / 400); // Dynamic step based on zoom
 
     this.equations.forEach(eq => {
       eq.criticalPoints = [];
@@ -103,7 +112,7 @@ export class Grapher {
 
       if (eq.error) return;
 
-      for (let x = -range; x <= range; x += step) {
+      for (let x = rangeMin; x <= rangeMax; x += step) {
         try {
           const scope = { x, t: this.time, ...this.params };
           const y = eq.compiled.evaluate(scope);
@@ -263,9 +272,6 @@ export class Grapher {
     const x = (e.clientX - this.view.offsetX) / this.view.scale;
     const y = -(e.clientY - this.view.offsetY) / this.view.scale;
 
-    document.getElementById('x-coord').textContent = x.toFixed(3);
-    document.getElementById('y-coord').textContent = y.toFixed(3);
-
     this.hoverState.x = x;
     this.hoverState.y = y;
     this.hoverState.activePoint = null;
@@ -282,11 +288,14 @@ export class Grapher {
       });
     });
 
-    if (this.onHover) this.onHover(y);
+    if (this.onHover) {
+      this.onHover({ x, y, activePoint: this.hoverState.activePoint });
+    }
   }
 
   drawGrid() {
     const { ctx, view, settings } = this;
+    if (!settings.showGrid) return;
     const { offsetX, offsetY, scale } = view;
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -531,11 +540,13 @@ export class Grapher {
 
   animate() {
     this.time += 0.05;
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Use window inner dimensions for clearing to avoid DPR scaling mismatch
+    this.ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     
     if (this.settings.partyMode) {
       this.ctx.fillStyle = `rgba(${(Math.sin(this.time) + 1) * 20}, 0, ${(Math.cos(this.time) + 1) * 20}, 0.1)`;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     }
 
     this.drawGrid();
