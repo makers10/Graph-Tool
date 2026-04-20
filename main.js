@@ -140,5 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grapher.updateSettings({ showLabels: e.target.checked });
   });
 
-  setTimeout(() => grapher.setEquations(ui.equations), 100);
+  // Synchronous initial sync to replace setTimeout hack
+  paramUi.notify();
+  ui.notify();
 });

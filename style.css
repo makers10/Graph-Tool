@@ -40,6 +40,22 @@ body {
   position: relative;
 }
 
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .controls-panel {
   position: absolute;
   top: 24px;
@@ -57,6 +73,7 @@ body {
   flex-direction: column;
   gap: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
 }
 
 header h1 {
@@ -75,6 +92,7 @@ header p {
 .equation-list {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 10px;
   overflow-y: auto;
   max-height: 300px;

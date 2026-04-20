@@ -35,7 +35,7 @@ export class UI {
   }
 
   addEquation(expression = 'sin(x)') {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     const color = this.colors[this.equations.length % this.colors.length];
     this.equations.push({ id, expression, color, isVisible: true, error: null });
     this.render();
@@ -92,7 +92,13 @@ export class UI {
       `;
 
       const input = item.querySelector('.equation-input');
-      input.addEventListener('input', (e) => this.updateEquation(eq.id, e.target.value));
+      let debounceTimeout;
+      input.addEventListener('input', (e) => {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => {
+          this.updateEquation(eq.id, e.target.value);
+        }, 300);
+      });
 
       const removeBtn = item.querySelector('.remove-btn');
       removeBtn.addEventListener('click', () => this.removeEquation(eq.id));
@@ -105,7 +111,7 @@ export class UI {
 
   setEquations(equations) {
     this.equations = equations.map((expr, index) => ({
-      id: Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       expression: expr,
       color: this.colors[index % this.colors.length],
       isVisible: true,
@@ -131,7 +137,7 @@ export class ParameterUI {
   }
 
   addParameter() {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     const names = 'cdefghjklmnpqrstuwxyz'.split('');
     const usedNames = this.parameters.map(p => p.name);
     const nextName = names.find(n => !usedNames.includes(n)) || 'v';
@@ -209,7 +215,7 @@ export class ParameterUI {
   setParameters(params) {
     this.parameters = params.map(p => ({
       ...p,
-      id: Math.random().toString(36).substring(2, 9)
+      id: crypto.randomUUID()
     }));
     this.render();
   }

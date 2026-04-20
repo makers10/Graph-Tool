@@ -101,6 +101,8 @@ export class Grapher {
       let lastY = null;
       let lastSlope = null;
 
+      if (eq.error) return;
+
       for (let x = -range; x <= range; x += step) {
         try {
           const scope = { x, t: this.time, ...this.params };
@@ -121,8 +123,8 @@ export class Grapher {
           }
           lastY = y;
         } catch (e) {
-          lastY = null;
-          lastSlope = null;
+          eq.error = e.message;
+          break;
         }
       }
     });
@@ -159,19 +161,30 @@ export class Grapher {
     let isDragging = false;
     let lastPos = { x: 0, y: 0 };
 
-    this.canvas.addEventListener('mousedown', (e) => {
+    const startDrag = (x, y) => {
       isDragging = true;
-      lastPos = { x: e.clientX, y: e.clientY };
-    });
+      lastPos = { x, y };
+    };
 
-    window.addEventListener('mousemove', (e) => {
+    const doDrag = (x, y) => {
       if (isDragging) {
-        const dx = e.clientX - lastPos.x;
-        const dy = e.clientY - lastPos.y;
+        const dx = x - lastPos.x;
+        const dy = y - lastPos.y;
         this.view.offsetX += dx;
         this.view.offsetY += dy;
-        lastPos = { x: e.clientX, y: e.clientY };
+        lastPos = { x, y };
       }
+    };
+
+    const endDrag = () => {
+      isDragging = false;
+      initialPinchDistance = null;
+    };
+
+    this.canvas.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY));
+
+    window.addEventListener('mousemove', (e) => {
+      doDrag(e.clientX, e.clientY);
       this.handleHover(e);
     });
 
@@ -179,9 +192,53 @@ export class Grapher {
       if (this.onHover) this.onHover(null);
     });
 
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
+    window.addEventListener('mouseup', endDrag);
+
+    // Touch support
+    let initialPinchDistance = null;
+
+    this.canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+      } else if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        doDrag(e.touches[0].clientX, e.touches[0].clientY);
+        this.handleHover(e.touches[0]);
+      } else if (e.touches.length === 2 && initialPinchDistance !== null) {
+        e.preventDefault(); // Prevent scrolling while zooming
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const zoomFactor = distance / initialPinchDistance;
+        
+        // Use midpoint for zoom center
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        
+        const nextScale = this.view.scale * zoomFactor;
+        if (nextScale >= this.view.minScale && nextScale <= this.view.maxScale) {
+          const unitX = (centerX - this.view.offsetX) / this.view.scale;
+          const unitY = (centerY - this.view.offsetY) / this.view.scale;
+          
+          this.view.scale = nextScale;
+          this.view.offsetX = centerX - unitX * this.view.scale;
+          this.view.offsetY = centerY - unitY * this.view.scale;
+        }
+        
+        initialPinchDistance = distance;
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', endDrag);
+    window.addEventListener('touchcancel', endDrag);
 
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -308,7 +365,7 @@ export class Grapher {
     const width = window.innerWidth;
 
     this.equations.forEach(eq => {
-      if (!eq.isVisible || !eq.compiled) return;
+      if (!eq.isVisible || !eq.compiled || eq.error) return;
 
       const color = settings.partyMode ? `hsl(${(time * 50) % 360}, 100%, 60%)` : eq.color;
       
@@ -350,7 +407,8 @@ export class Grapher {
             ctx.lineTo(px, py);
           }
         } catch (e) {
-          first = true;
+          eq.error = e.message;
+          break;
         }
       }
       ctx.stroke();
@@ -379,6 +437,8 @@ export class Grapher {
       if (p.x > maxX) p.x = minX;
       if (p.x < minX) p.x = maxX;
 
+      if (eq.error) return;
+      
       try {
         const scope = { x: p.x, t: time, ...params };
         const y = eq.compiled.evaluate(scope);
@@ -425,7 +485,7 @@ export class Grapher {
 
         ctx.shadowBlur = 0;
       } catch (e) {
-        // Math is hard, particle is sad
+        eq.error = e.message;
       }
     });
 
@@ -463,6 +523,12 @@ export class Grapher {
     }
   }
 
+  destroy() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+  }
+
   animate() {
     this.time += 0.05;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -482,7 +548,7 @@ export class Grapher {
       this.calculateCriticalPoints();
     }
 
-    requestAnimationFrame(() => this.animate());
+    this.animationFrameId = requestAnimationFrame(() => this.animate());
   }
 
   capture() {
