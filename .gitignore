@@ -23,15 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 plan.md
-Architecture / Code Quality:
-
-Grapher directly queries the DOM (document.getElementById('x-coord')) — breaks separation of concerns; should use a callback like onHover
-calculateCriticalPoints runs on a fixed range [-20, 20] regardless of the current viewport — misses points when zoomed out far
-Parameters (this.params) in Grapher are never initialized — if setParameters is never called, { ...this.params } spreads undefined and silently fails in some JS engines
-No vite.config.js — the project relies entirely on Vite defaults, which is fine now but will bite you when you need aliases, env vars, or build targets
-Missing from the plan that would add real value:
-
-URL state persistence (share a graph via URL) — straightforward with URLSearchParams
-Keyboard shortcuts (zoom with +/-, toggle grid with g)
-Equation visibility toggle (the isVisible field exists on the model but there's no UI toggle for it)
-The core logic is solid and the visual design is genuinely nice. The main things to fix immediately are the dead files, the gridColor init bug, the DPR clear bug, and the color assignment issue in setEquations. Those will cause real visible problems.
